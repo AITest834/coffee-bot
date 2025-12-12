@@ -5,7 +5,7 @@ from requests_oauthlib import OAuth1
 
 JST = timezone(timedelta(hours=9))
 
-SYSTEM_STYLE = {"min_len": 120, "max_len": 150}
+SYSTEM_STYLE = {"min_len": 70, "max_len": 140}
 
 TEMPLATES = [
     "「{myth}」って思ってたけど、家で飲むなら一番効くのは{truth}だった。これを{action}だけで、毎朝の一杯がちゃんと美味しくなる。",
