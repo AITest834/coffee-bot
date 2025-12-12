@@ -14,6 +14,42 @@ TEMPLATES = [
     "コーヒーが美味しくならない原因、だいたい{cause}。"
 ]
 
+TOPICS_MORNING = [
+    # 家で美味しくなる（②）
+    "お湯を少し待つだけで変わった話",
+    "粉をほんの少し増やした時の変化",
+    "注ぐスピードを変えただけの話",
+    "最初の一口を急がない理由",
+    "淹れたらすぐ飲むだけで違った話",
+    "カップを温めたら印象が変わった",
+    "忙しい日は完璧を目指さない方がいい話",
+    "失敗したと思った時の立て直し方",
+]
+
+TOPICS_NOON = [
+    # 選び方・考え方（④）
+    "正解より自分の好みでいい話",
+    "家で飲むなら十分な基準",
+    "続けやすいコーヒーの考え方",
+    "毎日飲むならこれくらいでいい話",
+    "比べすぎない方が楽な理由",
+    "他人の評価を気にしなくていい話",
+    # 勘違い（①）も昼は刺さる
+    "苦い＝美味しいと勘違いしてた頃",
+    "お湯は熱いほどいいと思ってた",
+]
+
+TOPICS_NIGHT = [
+    # 共感・放置向け（③＋⑦＋⑤）
+    "ずっとえぐくて悩んでた頃",
+    "薄すぎて水みたいだった話",
+    "真面目にやりすぎて疲れた話",
+    "情報を追いすぎた失敗",
+    "コーヒーは生活の飲み物",
+    "家コーヒーは頑張らない方が続く",
+    "毎日飲むなら完璧はいらない",
+    "まあいいかで飲む話",
+]
 
 TOPICS = [
     # ① 勘違い系
@@ -114,6 +150,15 @@ CAUSE = ["お湯が熱すぎる","注ぐのが速すぎる","粉が少なすぎ�
 
 BANNED = ["絶対","最強","バカ","死ね","政治","宗教","差別"]
 
+
+def time_slot_jst():
+    h = datetime.now(JST).hour
+    if 5 <= h < 10:
+        return "morning"
+    if 10 <= h < 17:
+        return "noon"
+    return "night"
+
 def load_json(path, default):
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -126,7 +171,17 @@ def save_json(path, obj):
         json.dump(obj, f, ensure_ascii=False, indent=2)
 
 def generate_post():
+    slot = time_slot_jst()
+    if slot == "morning":
+        topic = random.choice(TOPICS_MORNING)
+    elif slot == "noon":
+        topic = random.choice(TOPICS_NOON)
+    else:
+        topic = random.choice(TOPICS_NIGHT)
+
+    # topic を自然に混ぜる（テンプレはそのまま使う）
     t = random.choice(TEMPLATES)
+
     text = t.format(
         myth=random.choice(MYTHS),
         truth=random.choice(TRUTHS),
@@ -140,7 +195,13 @@ def generate_post():
         do=random.choice(DO),
         cause=random.choice(CAUSE),
     )
-    return re.sub(r"[ \t]+", " ", text).strip()
+
+    # 最後に「話題」を添える（人間っぽくなる）
+    # ※文字数が増えすぎたら quality_check が落とすので安全
+    text = f"{text}\n\n{topic}"
+
+    text = re.sub(r"[ \t]+", " ", text).strip()
+    return text
 
 def quality_check(text, recent):
     if any(b in text for b in BANNED):
